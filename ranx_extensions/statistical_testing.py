@@ -1,18 +1,43 @@
 import numpy as np
-from numba import prange
+from numba import prange, njit, types
+from numba.typed import Dict
 
 from ranx.statistical_testing import permute
 
 
+@njit(cache=True)
 def compute_full(c, t):
-    r_c = np.concatenate(np.concatenate([c for _ in c]))
-    r_t = np.concatenate(np.concatenate([np.roll(t, i, axis=0) for i, _ in enumerate(t)]))
+    c_trials, t_trials = c.shape[0], t.shape[0]
+    r_len = c.shape[1]
+    assert r_len == t.shape[1]
 
-    return np.column_stack((r_c, r_t))
-    
+    full_x = np.empty((c_trials * t_trials * r_len, 2), dtype=c.dtype)
 
-# @njit(cache=True, parallel=True)
-def trials_randomization_test(control, treatment, n_permutations=1000, max_p=0.01, random_seed=42):
+    for i in prange(c_trials):
+        step = i * c_trials * r_len
+        for j in prange(t_trials):
+            full_x[step + r_len * j:step + r_len * (j + 1), 0] = c[i]
+            full_x[step + r_len * j:step + r_len * (j + 1), 1] = t[j]
+
+    return full_x
+
+
+@njit(cache=True)
+def compute_random(c, t):
+    r_len = c.shape[1]
+    assert r_len == t.shape[1]
+
+    random_x = np.empty((r_len, 2), dtype=c.dtype)
+
+    for i in prange(r_len):
+        random_x[i, 0] = np.random.permutation(c[:, i])[0]
+        random_x[i, 1] = np.random.permutation(t[:, i])[0]
+
+    return random_x
+
+
+@njit(cache=True, parallel=True)
+def trials_randomization_test(control, treatment, n_permutations=1000, max_p=0.01, random_seed=42, compute='random'):
     ''''
     Performs (approximated) Fisher's Randomization Test.
 
@@ -26,11 +51,17 @@ def trials_randomization_test(control, treatment, n_permutations=1000, max_p=0.0
     control_mean = control.mean()
     treatment_mean = treatment.mean()
     control_treatment_diff = abs(control_mean - treatment_mean)
-    control_treatment_stack = compute_full(control, treatment)
 
     counter_array = np.zeros(n_permutations)
 
     for i in prange(n_permutations):
+        if compute == 'random':
+            control_treatment_stack = compute_random(control, treatment)
+        elif compute == 'full':
+            control_treatment_stack = compute_full(control, treatment)
+        else:
+            raise NotImplementedError
+
         permuted = permute(control_treatment_stack)
 
         permuted_diff = abs(permuted[:, 0].mean() - permuted[:, 1].mean())

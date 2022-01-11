@@ -17,6 +17,7 @@ def compute_trials_statistical_significance(
     n_permutations: int = 1000,
     max_p: float = 0.01,
     random_seed: int = 42,
+    compute: str = 'random',
 ):
     metric_p_values = {}
 
@@ -32,6 +33,7 @@ def compute_trials_statistical_significance(
             n_permutations,
             max_p,
             random_seed,
+            compute,
         )
 
         metric_p_values[m] = {
@@ -49,7 +51,7 @@ def compare_trials(
     max_p: float = 0.01,
     random_seed: int = 42,
     threads: int = 0,
-    t_mode: str = 'full'
+    compute: str = 'random'
 ):
     metrics = format_metrics(metrics)
     assert all(type(m) == str for m in metrics), "Metrics error"
@@ -92,6 +94,7 @@ def compare_trials(
                     n_permutations,
                     max_p,
                     random_seed,
+                    compute,
                 )
 
     # Compute win / tie / lose -------------------------------------------------
