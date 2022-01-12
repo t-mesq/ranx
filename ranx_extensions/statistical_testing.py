@@ -5,7 +5,15 @@ from numba.typed import Dict
 from ranx.statistical_testing import permute
 
 
-@njit(cache=True)
+@njit(cache=True, parallel=True)
+def compute_full_avg(c, t):
+    rc = c[np.random.randint(c.shape[0])]
+    rt = t[np.random.randint(t.shape[0])]
+
+    return abs(rc.mean() - rt.mean()), np.column_stack((rc, rt))
+
+
+@njit(cache=True, parallel=True)
 def compute_full(c, t):
     c_trials, t_trials = c.shape[0], t.shape[0]
     r_len = c.shape[1]
@@ -22,7 +30,7 @@ def compute_full(c, t):
     return abs(c.mean() - t.mean()), full_x
 
 
-@njit(cache=True)
+@njit(cache=True, parallel=True)
 def compute_random_avg(c, t):
     r_len = c.shape[1]
     assert r_len == t.shape[1]
@@ -35,7 +43,8 @@ def compute_random_avg(c, t):
 
     return abs(random_x[:, 0].mean() - random_x[:, 1].mean()), random_x
 
-@njit(cache=True)
+
+@njit(cache=True, parallel=True)
 def compute_random(c, t):
     return abs(c.mean() - t.mean()), compute_random_avg(c, t)[1]
 
@@ -64,6 +73,8 @@ def trials_randomization_test(control, treatment, n_permutations=1000, max_p=0.0
             control_treatment_diff, control_treatment_stack = compute_random_avg(control, treatment)
         elif compute == 'full':
             control_treatment_diff, control_treatment_stack = compute_full(control, treatment)
+        elif compute == 'full_avg':
+            control_treatment_diff, control_treatment_stack = compute_full_avg(control, treatment)
         else:
             raise NotImplementedError
 
