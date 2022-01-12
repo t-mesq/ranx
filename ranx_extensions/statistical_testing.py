@@ -14,6 +14,20 @@ def compute_full_avg(c, t):
 
 
 @njit(cache=True, parallel=True)
+def compute_avg(c, t):
+    r_len = c.shape[1]
+    assert r_len == t.shape[1]
+
+    avg_x = np.empty((r_len, 2), dtype=c.dtype)
+
+    for i in prange(r_len):
+        avg_x[i, 0] = np.mean(c[:, i])
+        avg_x[i, 1] = np.mean(t[:, i])
+
+    return abs(avg_x[:, 0].mean() - avg_x[:, 1].mean()), avg_x
+
+
+@njit(cache=True, parallel=True)
 def compute_full(c, t):
     c_trials, t_trials = c.shape[0], t.shape[0]
     r_len = c.shape[1]
@@ -75,6 +89,8 @@ def trials_randomization_test(control, treatment, n_permutations=1000, max_p=0.0
             control_treatment_diff, control_treatment_stack = compute_full(control, treatment)
         elif compute == 'full_avg':
             control_treatment_diff, control_treatment_stack = compute_full_avg(control, treatment)
+        elif compute == 'avg':
+            control_treatment_diff, control_treatment_stack = compute_avg(control, treatment)
         else:
             raise NotImplementedError
 

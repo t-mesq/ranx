@@ -32,7 +32,11 @@ run_1_2 = Run.from_file("data/run_2.txt")
 run_2_1 = Run.from_file("data/run_3.txt")
 run_2_2 = Run.from_file("data/run_4.txt")
 
-for compute in ('full', 'full_avg', 'random', 'random_avg'):
+# for compute in ('full', 'full_avg', 'random', 'random_avg'):
+#     report = compare_trials(qrels, [[run_1_1], [run_1_2], [run_2_1], [run_2_2]], ['mrr@10', 'recall@3'], 1000, 0.01, compute=compute)
+#     print(f'Single trial sanity check without trials with {compute} compute:', report, dict(report.comparisons), sep='\n')
+
+for compute in ('avg', 'full', 'full_avg', 'random', 'random_avg'):
     report = compare_trials(qrels, [[run_1_1, run_1_2], [run_2_1, run_2_2]], ['mrr@10', 'recall@3'], 1000, 0.01, compute=compute)
     print(f'Without trials with {compute} compute:', report, dict(report.comparisons), sep='\n')
 
