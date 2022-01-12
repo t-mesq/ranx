@@ -26,15 +26,16 @@ run_2_2 = Run()
 run_2_2.add_multi(q_ids, ds_ids, np.random.rand(qs, qs))
 run_2_2.name = 'run_2'
 
-qrels = Qrels.from_file("data/qrels.txt")
-run_1_1 = Run.from_file("data/run_1.txt")
-run_1_2 = Run.from_file("data/run_2.txt")
-run_2_1 = Run.from_file("data/run_3.txt")
-run_2_2 = Run.from_file("data/run_4.txt")
+# qrels = Qrels.from_file("data/qrels.txt")
+# run_1_1 = Run.from_file("data/run_1.txt")
+# run_1_2 = Run.from_file("data/run_2.txt")
+# run_2_1 = Run.from_file("data/run_3.txt")
+# run_2_2 = Run.from_file("data/run_4.txt")
 
-report = compare_trials(qrels, [[run_1_1, run_1_2], [run_2_1, run_2_2]], ['mrr@10', 'recall@3'], 10, 0.01)
-print('Without trials:', report, dict(report.comparisons), sep='\n')
+for compute in ('full', 'random', 'random_avg'):
+    report = compare_trials(qrels, [[run_1_1, run_1_2], [run_2_1, run_2_2]], ['mrr@10', 'recall@3'], 1000, 0.01, compute=compute)
+    print(f'Without trials with {compute} compute:', report, dict(report.comparisons), sep='\n')
 
-report = compare(qrels, [run_1_1, run_1_2, run_2_1, run_2_2], ['mrr@10', 'recall@3'], 10, 0.01)
+report = compare(qrels, [run_1_1, run_1_2, run_2_1, run_2_2], ['mrr@10', 'recall@3'], 1000, 0.01)
 print('With trials:', report, dict(report.comparisons), sep='\n')
 
