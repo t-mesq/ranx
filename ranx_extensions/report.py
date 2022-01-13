@@ -40,13 +40,15 @@ class TrialsReport(Report):
             ]
         )
 
-    def to_table(self):
+    def to_table(self, precision=4, pct=False):
         """Used internally."""
         return tabulate(
             [
                 [chars[i], run]
                 + [
-                    f"{score:.4f}±{self.standart_dev[run][metric]:.4f}{self.get_superscript_for_table(run, metric)}"
+                    f"{score*100 if pct else score:.{precision}f}±"
+                    f"{self.standart_dev[run][metric]:.{precision}{'%' if pct else 'f'}}"
+                    f"{self.get_superscript_for_table(run, metric)}"
                     for metric, score in v.items()
                 ]
                 for i, (run, v) in enumerate(self.results.items())

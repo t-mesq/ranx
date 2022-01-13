@@ -37,8 +37,8 @@ run_2_2 = Run.from_file("data/run_4.txt")
 #     print(f'Single trial sanity check without trials with {compute} compute:', report, dict(report.comparisons), sep='\n')
 
 for compute in ('avg', 'full', 'full_avg', 'random', 'random_avg'):
-    report = compare_trials(qrels, [[run_1_1, run_1_2], [run_2_1, run_2_2]], ['mrr@10', 'recall@3'], 1000, 0.01, compute=compute)
-    print(f'Without trials with {compute} compute:', report, dict(report.comparisons), sep='\n')
+    report = compare_trials(qrels, [[run_1_1, run_1_2], [run_2_1, run_2_2]], ['mrr@10', 'recall@3'], 10, 0.01, compute=compute)
+    print(f'Without trials with {compute} compute:', report.to_table(1, True), dict(report.comparisons), sep='\n')
 
 report = compare(qrels, [run_1_1, run_1_2, run_2_1, run_2_2], ['mrr@10', 'recall@3'], 1000, 0.01)
 print('With trials:', report, dict(report.comparisons), sep='\n')
